@@ -24,6 +24,9 @@ app.layout = html.Div(children= [html.H1('Airline Performance Dashboard', style=
                                  html.Br(),
                                  html.Br(),
                                  html.Div(dcc.Graph(id = 'line-plot')),
+                                 html.Br(),
+                                 html.Br(),
+                                 html.Div(dcc.Graph(id = 'bar-plot'))
                                  ])
 
 # add a callback decorator
@@ -45,6 +48,17 @@ def get_graph(year):
 
     return fig
 
+@app.callback(Output(component_id = 'bar-plot', component_property = 'figure'),
+              Input (component_id = 'input-year', component_property = 'value'))
+def get_bar_graph(year):
+    df = airline_data[airline_data['Year']==int(year)]
+    bar_data = df.groupby('DestState')['Flights'].sum().reset_index()
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=bar_data['DestState'],y=bar_data['Flights']))
+    fig.update_layout(title='Total number of flights to the destination state split by reporting airline',
+                      xaxis_title='DestState',
+                      yaxis_title='Flights')
+    return fig
 # Add computation to callback function and return graph
 if __name__ == '__main__':
     app.run_server()
