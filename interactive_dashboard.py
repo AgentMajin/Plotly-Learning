@@ -2,6 +2,7 @@ import pandas as pd
 import dash
 import plotly
 import dash_core_components as dcc
+import plotly.graph_objects as go
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
@@ -24,5 +25,26 @@ app.layout = html.Div(children= [html.H1('Airline Performance Dashboard', style=
                                  html.Br(),
                                  html.Div(dcc.Graph(id = 'line-plot')),
                                  ])
+
+# add a callback decorator
+@app.callback(Output(component_id = 'line-plot', component_property='figure'),
+              Input(component_id = 'input-year', component_property = 'value'))
+
+def get_graph(year):
+    df = airline_data[airline_data['Year']==int(year)]
+
+    line_data = df.groupby('Month')['ArrDelay'].mean().reset_index()
+
+
+    fig =go.Figure(data=go.Scatter(x=line_data['Month'],y=line_data['ArrDelay'],
+                                   mode='lines',marker=dict(color='green')))
+
+    fig.update_layout(title='Month vs Average Flight Delay Time', xaxis_title='Month',
+                      yaxis_title='ArrDelay')
+
+
+    return fig
+
+# Add computation to callback function and return graph
 if __name__ == '__main__':
     app.run_server()
